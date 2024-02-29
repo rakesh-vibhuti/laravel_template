@@ -91,7 +91,7 @@ jobs:
 
     steps:
       - name: Notify developers via SendGrid Email
-        uses: hayorov/ez-sendgrid@v1.0.2
+        uses: kasunkv/sendgrid-vsts-task@v2.1.2
         with:
           api_key: ${{ secrets.SENDGRID_API_KEY }}
           to: rakesh@vibhuti.biz
