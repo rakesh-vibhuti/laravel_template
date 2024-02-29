@@ -85,17 +85,58 @@ jobs:
           server-dir: /public/abc
   
 
-  notify:
-    needs: [build, laravel-tests]
+  send_notification:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Notify developers via SendGrid Email
-        uses: kasunkv/sendgrid-vsts-task@v2.1.2
-        with:
-          api_key: ${{ secrets.SENDGRID_API_KEY }}
-          to: rakesh@vibhuti.biz
-          from: rakesh@vibhuti.biz
-          subject: "CI/CD Notification"
-          text: "Deployment and tests completed successfully!"
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 14
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Send notification
+      run: |
+        # Use SendGrid API key to authenticate
+        SENDGRID_API_KEY=$SENDGRID_API_KEY  # Set your SendGrid API key as a secret in your repository
+
+        # Replace the following variables with your actual values
+        TO_EMAIL=rakesh@vibhuti.biz
+        FROM_EMAIL=rakesh@vibhuti.biz
+        SUBJECT="GitHub Action Notification"
+        BODY="Your custom notification message goes here."
+
+        # Send email using curl and SendGrid API
+        curl -X "POST" "https://api.sendgrid.com/v3/mail/send" \
+          -H "Authorization: Bearer $SENDGRID_API_KEY" \
+          -H "Content-Type: application/json" \
+          -d $'{
+            "personalizations": [
+              {
+                "to": [
+                  {
+                    "email": "'"$TO_EMAIL"'"
+                  }
+                ],
+                "subject": "'"$SUBJECT"'"
+              }
+            ],
+            "from": {
+              "email": "'"$FROM_EMAIL"'"
+            },
+            "content": [
+              {
+                "type": "text/plain",
+                "value": "'"$BODY"'"
+              }
+            ]
+          }'
+
+      env:
+        SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
           
