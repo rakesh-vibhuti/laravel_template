@@ -91,7 +91,7 @@ jobs:
 
     steps:
       - name: Notify developers via SendGrid Email
-        uses: sendgrid/sendgrid-php
+        uses: sendgrid/sendgrid-php@main
         with:
           api_key: ${{ secrets.SENDGRID_API_KEY }}
           to: rakesh@vibhuti.biz
