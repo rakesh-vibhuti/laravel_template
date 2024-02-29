@@ -72,26 +72,30 @@ jobs:
   deploy:
     needs: laravel-tests
     runs-on: ubuntu-latest
-
     steps:
-      - name: Deploy to Development Environment
-        uses: appleboy/ssh-action@master
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v3
+      
+      - name: 📂 Sync files
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
-          host: ${{ secrets.PLESK_HOST }}
-          username: ${{ secrets.PLESK_USERNAME }}
-          key: ${{ secrets.PLESK_SSH_KEY }}
-          port: ${{ secrets.PLESK_SSH_PORT }}
-          script: ./deploy.sh
+          server: ftp.samkirkland.com
+          username: myFtpUserName
+          password: ${{ secrets.ftp_password }}
+          server-dir: /public/abc
+  
 
   notify:
-    needs: [build, laravel-tests, deploy]
+    needs: [build, laravel-tests]
     runs-on: ubuntu-latest
 
     steps:
-      - name: Notify developers
-        # Add your notification steps here, e.g., email  services
-        run: |
-          # Your notification commands go here
-          # Example: 
-          # Deployment and tests completed successfully!
+      - name: Notify developers via SendGrid Email
+        uses: sendgrid/sendgrid-action@v1
+        with:
+          api_key: ${{ secrets.SENDGRID_API_KEY }}
+          to: rakesh@vibhuti.biz
+          from: rakesh@vibhuti.biz
+          subject: "CI/CD Notification"
+          text: "Deployment and tests completed successfully!"
           
