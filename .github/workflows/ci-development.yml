@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - development
+      
+  pull_request:
+    branches:
+      - development
 
 jobs:
   build:
@@ -79,10 +83,10 @@ jobs:
       - name: 📂 Sync files
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
-          server: ftp.samkirkland.com
-          username: myFtpUserName
-          password: ${{ secrets.ftp_password }}
-          server-dir: /public/abc
+          server: laravel-vibhuti.c1.is
+          username:  ${{ secrets.FTPUSER }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: /
   
 
   send_notification:
