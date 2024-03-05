@@ -74,7 +74,7 @@ jobs:
       run: vendor/bin/phpunit
 
   deploy:
-    needs: laravel-tests
+    needs: [laravel-tests, build]
     runs-on: ubuntu-latest
     steps:
       - name: 🚚 Get latest code
@@ -87,10 +87,29 @@ jobs:
           username:  ${{ secrets.FTPUSER }}
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: /
-  
+      - name: 🚀 Run migration
+        run: php artisan migrate --force
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_DATABASE: ${{ secrets.DB_DATABASE }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+    
+      - name: 🌐 Start Laravel application
+        run: |
+          php artisan serve &
+          sleep 10
+    
+      - name: ⏱️ Wait for Laravel to start
+        run: sleep 10
+    
+      - name: 🚀 Run tests or additional commands
+        run: php artisan test
 
   send_notification:
     runs-on: ubuntu-latest
+    needs: [laravel-tests, build, deploy]
 
     steps:
     - name: Checkout repository
