@@ -86,28 +86,7 @@ jobs:
           server: laravel-vibhuti.c1.is
           username:  ${{ secrets.FTPUSER }}
           password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: /
-      - name: Install Dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
-      - name: 🚀 Run migration
-        run: php artisan migrate --force
-        env:
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_PORT: ${{ secrets.DB_PORT }}
-          DB_DATABASE: ${{ secrets.DB_DATABASE }}
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-    
-      - name: 🌐 Start Laravel application
-        run: |
-          php artisan serve &
-          sleep 10
-    
-      - name: ⏱️ Wait for Laravel to start
-        run: sleep 10
-    
-      - name: 🚀 Run tests or additional commands
-        run: php artisan test
+          server-dir: /laravel
 
   send_notification:
     runs-on: ubuntu-latest
