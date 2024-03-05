@@ -86,7 +86,7 @@ jobs:
           server: laravel-vibhuti.c1.is
           username:  ${{ secrets.FTPUSER }}
           password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: laravel
+          server-dir: /laravel/
 
   send_notification:
     runs-on: ubuntu-latest
