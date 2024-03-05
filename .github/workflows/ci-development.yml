@@ -87,6 +87,8 @@ jobs:
           username:  ${{ secrets.FTPUSER }}
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: /
+      - name: Install Dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
       - name: 🚀 Run migration
         run: php artisan migrate --force
         env:
