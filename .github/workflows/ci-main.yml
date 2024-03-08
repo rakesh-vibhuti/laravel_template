@@ -73,14 +73,13 @@ jobs:
         run: kubectl apply -f path/to/kubernetes.yaml
 
       - name: Notify New Relic
-        uses: newrelic/deploy-action@v2
-        with:
-          apiKey: ${{ secrets.NEW_RELIC_API_KEY }}
-          accountId: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
-          region: us
-          changelog: "Deployment to Kubernetes"
-          user: ${{ github.actor }}
-          revision: ${{ github.sha }}
+        run: |
+          curl -X POST -H "Api-Key: ${{ secrets.NEW_RELIC_API_KEY }}" \
+          -H "Content-Type: application/json" \
+          -d '{"deployment": {"revision": "${{ github.sha }}", "changelog": "Deployment to Kubernetes"}}' \
+          https://api.newrelic.com/v2/applications/${{ secrets.NEW_RELIC_ACCOUNT_ID }}/deployments.json
+        env:
+          NEW_RELIC_API_KEY: ${{ secrets.NEW_RELIC_API_KEY }}
 
   rollback-check:
     runs-on: ubuntu-latest
