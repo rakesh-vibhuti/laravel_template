@@ -64,20 +64,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up kubectl
-        uses: azure/k8s-set-context@v1
-        with:
-          kubeconfig: ${{ secrets.KUBECONFIG }}
+      - name: Install New Relic CLI
+        run: |
+          curl -Ls https://download.newrelic.com/install/newrelic-cli/scripts/install.sh | bash
 
-      - name: Deploy to Kubernetes
-        run: kubectl apply -f path/to/kubernetes.yaml
+      - name: Run New Relic Installation
+        run: |
+          sudo NEW_RELIC_API_KEY=${{ secrets.NEW_RELIC_API_KEY }} NEW_RELIC_ACCOUNT_ID=${{ secrets.NEW_RELIC_ACCOUNT_ID }} /usr/local/bin/newrelic install -n php-agent-installer
 
+      # Add additional steps for your application deployment if needed
+
+      # Notify New Relic about the deployment
       - name: Notify New Relic
         run: |
-          curl -X POST -H "Api-Key: ${{ secrets.NEW_RELIC_API_KEY }}" \
-          -H "Content-Type: application/json" \
-          -d '{"deployment": {"revision": "${{ github.sha }}", "changelog": "Deployment to Kubernetes"}}' \
-          https://api.newrelic.com/v2/applications/${{ secrets.NEW_RELIC_ACCOUNT_ID }}/deployments.json
+          # Replace the following command with the actual command or API call to notify New Relic about the deployment
+          echo "Notifying New Relic about the deployment"
         env:
           NEW_RELIC_API_KEY: ${{ secrets.NEW_RELIC_API_KEY }}
 
