@@ -4,20 +4,12 @@ on:
   push:
     branches:
       - development
+      
+  pull_request:
+    branches:
+      - development
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-
-      - name: Set up environment
-        run: |
-          echo "Setting up environment..."
-          echo "Skipping dependency installation on Windows environment."
-
   laravel-tests:
     runs-on: ubuntu-latest
 
@@ -68,30 +60,86 @@ jobs:
         DB_CONNECTION: sqlite
         DB_DATABASE: database/database.sqlite
       run: vendor/bin/phpunit
-
-  deploy:
-    needs: laravel-tests
+  build:
+    needs: [laravel-tests]
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy to Development Environment
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.PLESK_HOST }}
-          username: ${{ secrets.PLESK_USERNAME }}
-          key: ${{ secrets.PLESK_SSH_KEY }}
-          port: ${{ secrets.PLESK_SSH_PORT }}
-          script: ./deploy.sh
+      - name: Checkout Repository
+        uses: actions/checkout@v2
 
-  notify:
-    needs: [build, laravel-tests, deploy]
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Notify developers
-        # Add your notification steps here, e.g., email  services
+      - name: Set up environment
         run: |
-          # Your notification commands go here
-          # Example: 
-          # Deployment and tests completed successfully!
+          echo "Setting up environment..."
+          echo "Skipping dependency installation on Windows environment."
+  deploy:
+    needs: [laravel-tests, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v3
+      
+      - name: 📂 Sync files
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: laravel-vibhuti.c1.is
+          username:  ${{ secrets.FTPUSER }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: /
+
+  send_notification:
+    runs-on: ubuntu-latest
+    needs: [laravel-tests, build, deploy]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 14
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Send notification
+      run: |
+        # Use SendGrid API key to authenticate
+        SENDGRID_API_KEY=$SENDGRID_API_KEY  # Set your SendGrid API key as a secret in your repository
+
+        # Replace the following variables with your actual values
+        TO_EMAIL=rakesh@vibhuti.biz
+        FROM_EMAIL=rakesh@vibhuti.biz
+        SUBJECT="GitHub Action Notification"
+        BODY="Your custom notification message goes here."
+
+        # Send email using curl and SendGrid API
+        curl -X "POST" "https://api.sendgrid.com/v3/mail/send" \
+          -H "Authorization: Bearer $SENDGRID_API_KEY" \
+          -H "Content-Type: application/json" \
+          -d $'{
+            "personalizations": [
+              {
+                "to": [
+                  {
+                    "email": "'"$TO_EMAIL"'"
+                  }
+                ],
+                "subject": "'"$SUBJECT"'"
+              }
+            ],
+            "from": {
+              "email": "'"$FROM_EMAIL"'"
+            },
+            "content": [
+              {
+                "type": "text/plain",
+                "value": "'"$BODY"'"
+              }
+            ]
+          }'
+
+      env:
+        SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
           
