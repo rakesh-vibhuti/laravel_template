@@ -81,21 +81,31 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
+  
       - name: Install New Relic CLI
         run: |
           curl -Ls https://download.newrelic.com/install/newrelic-cli/scripts/install.sh | bash
-
+  
       - name: Run New Relic Installation
         run: |
           sudo NEW_RELIC_API_KEY=${{ secrets.NEW_RELIC_API_KEY }} NEW_RELIC_ACCOUNT_ID=${{ secrets.NEW_RELIC_ACCOUNT_ID }} /usr/local/bin/newrelic install -n php-agent-installer
-
-
+  
       # Notify New Relic about the deployment
       - name: Notify New Relic
         run: |
-          # Replace the following command with the actual command or API call to notify New Relic about the deployment
-          echo "Notifying New Relic about the deployment"
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -H "Api-Key: ${{ secrets.NEW_RELIC_API_KEY }}" \
+            -d '{
+              "deployment": {
+                "revision": "${{ github.sha }}",
+                "changelog": "Deployment changelog or description",
+                "description": "Deployment description",
+                "user": "${{ github.actor }}"
+              }
+            }' \
+            "https://api.newrelic.com/v2/applications/${{ secrets.NEW_RELIC_ACCOUNT_ID }}/deployments.json"
+        
         env:
           NEW_RELIC_API_KEY: ${{ secrets.NEW_RELIC_API_KEY }}
 
