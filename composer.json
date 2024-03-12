@@ -10,7 +10,7 @@
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
-        "s-ichikawa/laravel-sendgrid-driver": "^4.0",
+        "s-ichikawa/laravel-sendgrid-driver": "^4.0.4",
         "sendgrid/sendgrid": "^8.1"
     },
     "require-dev": {
